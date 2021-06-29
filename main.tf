@@ -45,6 +45,7 @@ resource "aws_subnet" "public_subnets" {
       Name = "${var.name_prefix}-public-net-${element(var.availability_zones, count.index)}"
     },
   )
+}
 
 # Elastic IPs for NAT
 resource "aws_eip" "nat_eip" {
