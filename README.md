@@ -1,1 +1,1 @@
-# Networking Terraform Module for AWS - terraform-aws-vpc #
+# terraform-aws-vpc
