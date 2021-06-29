@@ -57,3 +57,21 @@ resource "aws_eip" "nat_eip" {
     },
   )
 }
+
+# NAT Gateways
+resource "aws_nat_gateway" "nat_gw" {
+  count         = var.single_nat ? 1 : length(var.availability_zones)
+  allocation_id = var.single_nat ? aws_eip.nat_eip.0.id : element(aws_eip.nat_eip.*.id, count.index)
+  subnet_id     = var.single_nat ? aws_subnet.public_subnets.0.id : element(aws_subnet.public_subnets.*.id, count.index)
+
+  tags = merge(
+    var.additional_tags,
+    {
+      Name = "${var.name_prefix}-nat-gw-${element(var.availability_zones, count.index)}"
+    },
+  )
+
+  depends_on = [
+    aws_internet_gateway.internet_gw
+  ]
+}
