@@ -75,3 +75,34 @@ resource "aws_nat_gateway" "nat_gw" {
     aws_internet_gateway.internet_gw
   ]
 }
+
+# Public route table
+resource "aws_route_table" "public_subnets_route_table" {
+  count  = length(var.availability_zones)
+  vpc_id = aws_vpc.vpc.id
+  tags = merge(
+    var.additional_tags,
+    {
+      Name = "${var.name_prefix}-public-rt-${element(var.availability_zones, count.index)}"
+    },
+  )
+}
+
+# Public route to access internet
+resource "aws_route" "public_internet_route" {
+  count = length(var.availability_zones)
+  depends_on = [
+    aws_internet_gateway.internet_gw,
+    aws_route_table.public_subnets_route_table,
+  ]
+  route_table_id         = element(aws_route_table.public_subnets_route_table.*.id, count.index)
+  destination_cidr_block = "0.0.0.0/0"
+  gateway_id             = aws_internet_gateway.internet_gw.id
+}
+
+# Association of Route Table to Subnets
+resource "aws_route_table_association" "public_internet_route_table_associations" {
+  count          = length(var.public_subnets_cidrs_per_availability_zone)
+  subnet_id      = element(aws_subnet.public_subnets.*.id, count.index)
+  route_table_id = element(aws_route_table.public_subnets_route_table.*.id, count.index)
+}
