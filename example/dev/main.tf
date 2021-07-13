@@ -8,6 +8,15 @@ provider "aws" {
   secret_key                  = ""
 }
 
+terraform {
+  backend "s3" {
+    bucket         = "svunnam-dev-terraform-vpc"
+    key            = "terraform.tfstate"
+    region         = "us-east-1"
+    dynamodb_table = "terraform_state"
+  }
+}
+
 module "aws-base-network" {
   source         = "../../"
   name_prefix    = "dev"
