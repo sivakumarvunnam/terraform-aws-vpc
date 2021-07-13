@@ -22,26 +22,30 @@ jobs:
       - name: Configure AWS credentials from Test account
         uses: aws-actions/configure-aws-credentials@v1
         with:
-          aws-access-key-id: ${{ secrets.TEST_AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.TEST_AWS_SECRET_ACCESS_KEY }}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
       - name: Terraform Format
         id: fmt
         run: terraform fmt -check
+        working-directory: example/dev
 
       - name: Terraform Init
         id: init
         run: terraform init
+        working-directory: example/dev
 
       - name: Terraform Validate
         id: validate
         run: terraform validate -no-color
+        working-directory: example/dev
 
       - name: Terraform Plan
         id: plan
         if: github.event_name == 'pull_request'
         run: terraform plan -no-color
+        working-directory: example/dev
         continue-on-error: true
 
       - uses: actions/github-script@0.9.0
@@ -80,3 +84,4 @@ jobs:
       - name: Terraform Apply
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         run: terraform apply -auto-approve
+        working-directory: example/dev
